@@ -1,0 +1,35 @@
+name: Build PouvoirsRoulette
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [principal]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Organiser les fichiers
+        run: |
+          mkdir -p src/main/java/com/pouvoirs/roulette
+          mkdir -p src/main/resources
+          for f in *.java; do
+            [ -f "$f" ] && mv "$f" src/main/java/com/pouvoirs/roulette/
+          done
+          mv config.yml plugin.yml src/main/resources/
+
+      - name: Compiler le plugin
+        run: mvn clean package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PouvoirsRoulette-JAR
+          path: target/*.jar
